@@ -1,4 +1,4 @@
-# Neural Network within limited Training time that maximize the accuracy on the CIFAR-10 test-set
+# Neural Network Optimization within limited Training time on the CIFAR-10 test set
 The goal of this project is to improve a neural network's performance on the CIFAR10 dataset under a strict 10-minute training constraint, focusing on architectural optimization and efficient training strategies without using pretrained models.\
 ## 1. Summary:
 ### Approach: 
