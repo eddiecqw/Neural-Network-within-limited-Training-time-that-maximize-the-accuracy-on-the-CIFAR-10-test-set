@@ -12,6 +12,56 @@ Developed a custom CNN (MyNet) with **residual connections**, **batch normalizat
 ### Baseline definition:
 The ResNet-18 model provided by the PyTorch official website is used as a comparison baseline without additional data augmentation and preprocessing.
 ### Final Version (Our Model):
+```python
+import torch
+import torch.nn as nn
+class MyNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(3, 64, 3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(64),
+            nn.MaxPool2d(2, 2)
+        )
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(64, 128, 3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(128),
+            nn.MaxPool2d(2, 2)
+        )
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(128, 256, 3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(256),
+            nn.MaxPool2d(2, 2)
+        )
+        self.residual = nn.Sequential(
+            nn.Conv2d(64, 64, kernel_size=3, padding=1, groups=64),  # depthwise
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, 64, kernel_size=1),  # pointwise
+            nn.BatchNorm2d(64)
+        )
+        self.residual_act = nn.ReLU(inplace=True)
+        self.classifier = nn.Sequential(
+            nn.Linear(256 * 4 * 4, 512),
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.2),
+            nn.Linear(512, 10)
+        )
+    def forward(self, x):
+        x = self.conv1(x)
+        identity = x
+        res_out = self.residual(x)
+        x = self.residual_act(res_out + identity)
+        x = self.conv2(x)
+        x = self.conv3(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+net = MyNet().cuda()
+```
 o	Add three layers of convolution modules and introduce Batch Normalization and ReLU\
 o	Introduce Depthwise Separable Convolution residual branch after the first layer of convolution\
 o	Use OneCycleLR to dynamically adjust the learning rate to accelerate model convergence\
